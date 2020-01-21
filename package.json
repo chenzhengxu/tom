@@ -1,0 +1,20 @@
+{
+  "name": "tom",
+  "version": "1.0.0",
+  "description": "null",
+  "main": "lib/index.js",
+  "scripts": {
+    "start": "npm run build && node lib/index.js",
+    "build": "tsc"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.1",
+    "nodemailer": "^6.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^13.1.8",
+    "tslint": "^5.20.1",
+    "typescript": "^3.0.1"
+  }
+}

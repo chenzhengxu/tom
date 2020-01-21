@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "import-spacing": true,
+    "quotemark": [ true, "single", "avoid-escape" ],
+    "new-parens": true,
+    "no-arg": true,
+    "no-bitwise": true,
+    "indent": [true, "spaces"],
+    "ter-indent": [true, 2],
+    "no-conditional-assignment": true,
+    "no-consecutive-blank-lines": false
+  }
+}

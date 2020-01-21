@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "declaration": true,
+    "sourceMap": true,
+    "noEmitOnError": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "experimentalDecorators": true,
+    "noFallthroughCasesInSwitch": true,
+    "strictNullChecks": true,
+    "outDir": "./lib"
+  },
+  "exclude": [ "node_modules/", "lib/" ],
+  "include": [ "src/**/*.ts" ]
+}
