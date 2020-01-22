@@ -10,7 +10,8 @@
     "experimentalDecorators": true,
     "noFallthroughCasesInSwitch": true,
     "strictNullChecks": true,
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "resolveJsonModule": true
   },
   "exclude": [ "node_modules/", "lib/" ],
   "include": [ "src/**/*.ts" ]
