@@ -1,30 +1,30 @@
-import { TomMailSender, MailOptions, TomUtil } from './utils'
+import {TomMailSender, MailOptions, TomUtil} from './utils'
 import Axios from 'axios'
 
 class Cookie {
-  latlng: string;
-  latlon: string;
-  network: string;
-  _lxsdk_s: string;
-  cityid: number;
-  dper: string;
-  dpid: string;
-  _lx_utm: string;
-  dp_pwa_v_: string;
-  '_hc.v': string;
-  _lxsdk_dpid: string;
-  ci: number;
-  __mta: string;
-  _lxsdk: string;
-  _lxsdk_cuid: string;
-  _lxsdk_unoinid: string;
+  latlng: string
+  latlon: string
+  network: string
+  _lxsdk_s: string
+  cityid: number
+  dper: string
+  dpid: string
+  _lx_utm: string
+  dp_pwa_v_: string
+  '_hc.v': string
+  _lxsdk_dpid: string
+  ci: number
+  __mta: string
+  _lxsdk: string
+  _lxsdk_cuid: string
+  _lxsdk_unoinid: string
   // additions
-  latitude: number;
-  longitude: number;
-  cookie: string;
-  _stringValue: string;
+  latitude: number
+  longitude: number
+  cookie: string
+  _stringValue: string
   additions: Array<string> = ['additions', 'latitude', 'longitude', 'cookie', '_stringValue']
-  
+
   constructor(cookie: string) {
     this.cookie = cookie
     let a: Array<string> = cookie.split('; ')
@@ -75,60 +75,64 @@ interface Coupon {
 class TomInstance {
   // 可配置的一些变量
   // 开始时间 单位：minute 11:20 17:20
-  startClocks: Array<number> = [11*60+20, 17*60+20, 20*60+20];
+  startClocks: Array<number> = [11 * 60 + 20, 14 * 60 + 30, 17 * 60 + 20, 20 * 60 + 20]
   // 持续时间 单位：minute
-  continuousTime: number = 60;
+  continuousTime: number = 60
   // 一轮请求请求的页数 每页10条 3*10=30条
-  requestCount: number = 3;
+  requestCount: number = 3
   // 每条请求等待的时间 s
-  requestDelay: number = 1;
+  requestDelay: number = 1
   // 请求完一轮之后等待的时间 s
-  requestRoundDelay: number = 5;
+  requestRoundDelay: number = 5
 
   // cookie对象
-  cookie: Cookie;
+  cookie: Cookie
   // 是否正在请求中
-  isRequesting: boolean;
+  isRequesting: boolean
   // 请求的timer
-  requestTimer: number;
+  requestTimer: number
   // 时间相关
-  startClocksMs: Array<number>;
-  terminationClocksMs: Array<number>;
-  usingClockIndex: number = -1;
-  oneDayMs: number = 24 * 60 * 60 * 1000;
+  startClocksMs: Array<number>
+  terminationClocksMs: Array<number>
+  usingClockIndex: number = -1
+  oneDayMs: number = 24 * 60 * 60 * 1000
   // 请求结果
-  roundResult: Array<Coupon> = [];
+  roundResult: Array<Coupon> = []
   // 缓存已经推荐的卡券id
-  cache: Array<string> = [];
+  cache: Array<string> = []
   // 是否是第一轮请求，第一轮请求不发送邮件
-  isFirstRequestRound: boolean = false;
+  isFirstRequestRound: boolean = false
   // 邮件
-  mailsender: TomMailSender;
+  mailsender: TomMailSender
   // 请求地址
-  url: string;
+  url: string
 
   constructor(options: TomOptions) {
     TomUtil.log('tom is start')
-    var self = this
+    let self = this
     this.cookie = new Cookie(options.cookie)
     if (!this.cookie.dpid) {
       TomUtil.error('请使用正确的cookie')
     }
     this.url = options.url
     this.mailsender = new TomMailSender(options.mailOptions)
-    this.startClocksMs = this.startClocks.map(function(v) {
+    this.startClocksMs = this.startClocks.map(function (v) {
       // 时区的原因这边要减八小时
-      return (v - 8 * 60 ) * 60 * 1000
+      return (v - 8 * 60) * 60 * 1000
     })
-    this.terminationClocksMs = this.startClocksMs.map(function(v) {
-      return v + self.continuousTime * 60 *1000
+    this.terminationClocksMs = this.startClocksMs.map(function (v) {
+      return v + self.continuousTime * 60 * 1000
     })
     this.startPolling()
   }
+
   startPolling() {
-    setInterval(this.polling(), 10*60*1000)
+    setInterval(this.polling(), 10 * 60 * 1000) // 10分钟轮训一次
   }
-  polling() : Function {
+
+  // 轮训操作
+  polling(): Function {
+    TomUtil.log('轮训开始')
     var self = this
     let now: Date = new Date()
     let timeInterval = now.getTime() - Math.floor(now.getTime() / this.oneDayMs) * this.oneDayMs
@@ -140,17 +144,20 @@ class TomInstance {
         clearInterval(this.requestTimer)
       }
     } else {
+      TomUtil.log('轮训开始1', this.startClocksMs)
       var breakFlag = false
       this.startClocksMs.forEach((v, i) => {
         if (breakFlag) {
           return
         }
+        TomUtil.log('轮训开始2', timeInterval, v, self.terminationClocksMs[i])
         // judge if time is during startClock and terminationClock
         if (timeInterval > v && timeInterval < self.terminationClocksMs[i]) {
+          TomUtil.log('轮训开始3')
           self.isRequesting = true
           self.usingClockIndex = i
           let requestRoundTimeout = (self.requestCount * self.requestDelay + self.requestRoundDelay) * 1000
-          self.requestTimer = setInterval(self.startRequestRound(requestRoundTimeout-1000), requestRoundTimeout)
+          self.requestTimer = setInterval(self.startRequestRound(requestRoundTimeout - 1000), requestRoundTimeout)
           breakFlag = true
         }
       })
@@ -158,7 +165,9 @@ class TomInstance {
     TomUtil.log()
     return this.polling.bind(this)
   }
-  startRequestRound(exportTimeOut: number) : Function {
+
+  startRequestRound(exportTimeOut: number): Function {
+    TomUtil.log('startRequestRound')
     var self = this
     this.roundResult = []
     let internalRequestCount: number = this.requestCount
@@ -167,19 +176,20 @@ class TomInstance {
       let timeout: number = page * this.requestDelay
       setTimeout(() => {
         self.request(page)
-      }, timeout);
-      internalRequestCount--;
+      }, timeout)
+      internalRequestCount--
     }
-    new Promise(function(resolve) {
+    new Promise(function (resolve) {
       setTimeout(() => {
         resolve()
-      }, exportTimeOut-1000);
-    }).then(function() {
+      }, exportTimeOut - 1000)
+    }).then(function () {
       self.exportResult()
       self.isFirstRequestRound = false
     })
     return this.startRequestRound.bind(this)
   }
+
   request(page: number) {
     var self = this
     let cookie = this.cookie
@@ -210,13 +220,14 @@ class TomInstance {
       },
       data: data,
       timeout: requestRoundDelay * 1000
-    }).then(function(response) {
+    }).then(function (response) {
+      TomUtil.log(`请求结果code = ${response.data.code}`)
       let data = response.data
       if (data && data.code == 200) {
         // success
         let discountCouponList: Array<any> = data.data.data.discountCouponList
         if (discountCouponList && discountCouponList.length) {
-          discountCouponList.forEach(function(v) {
+          discountCouponList.forEach(function (v) {
             let couponStatus = v.commonCouponDTO.couponStatus
             if (couponStatus === 1) {
               let coupon: Coupon = {
@@ -230,10 +241,11 @@ class TomInstance {
           })
         }
       }
-    }).catch(function(error) {
+    }).catch(function (error) {
       TomUtil.error(error)
     })
   }
+
   recordCoupon(coupon: Coupon) {
     try {
       if (this.cache.indexOf(coupon.couponId) > -1) {
@@ -251,6 +263,7 @@ class TomInstance {
     this.cache.push(coupon.couponId)
     this.roundResult.push(coupon)
   }
+
   exportResult() {
     if (!this.isFirstRequestRound && this.roundResult.length > 0) {
       let content: string = ''
