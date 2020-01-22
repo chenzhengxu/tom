@@ -1,5 +1,6 @@
 import {TomMailSender, MailOptions, TomUtil} from './utils'
 import Axios from 'axios'
+import NoticeUtils from './notice'
 
 class Cookie {
   latlng: string
@@ -272,6 +273,7 @@ class TomInstance {
       })
       this.roundResult = []
       this.mailsender.sendMail('好券推荐', content)
+      NoticeUtils.noticeDing(content)
       TomUtil.log(content)
     }
   }
